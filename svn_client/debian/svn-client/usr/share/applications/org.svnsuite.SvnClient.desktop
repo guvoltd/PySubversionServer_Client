@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=SVN Client
+GenericName=Subversion Client
+Comment=GUI for Subversion working copy operations
+Exec=svn-client %F
+Icon=org.svnsuite.SvnClient
+Terminal=false
+Categories=Development;RevisionControl;
+Keywords=svn;subversion;version control;vcs;diff;commit;checkout;
+MimeType=inode/directory;
+StartupNotify=true
+StartupWMClass=svn-client

@@ -1,0 +1,3 @@
+correction in requirements.md document. Svn Client and Svn Server Gui will be saperate projects and not shipped in single installation package. both package required to be saperate. if not added add both GUI implementation in seperate folders in same workspace. the script for building and bundling package will genereate both the project in seperat.
+
+okay getting error due to installation of python packages in the temp directory. Make changes in the implementation and run modes, such as, python will be having virtual environment based installation in loads it on each new execution. make installation in virtual environment if not installed.

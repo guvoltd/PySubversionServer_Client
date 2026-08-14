@@ -1,0 +1,22 @@
+Package: svn-client
+Version: 0.1.0-1
+Architecture: all
+Maintainer: SVN Suite Team <dev@svnsuite.example.org>
+Installed-Size: 38
+Depends: python3-keyring (>= 25.0), python3:any, python3-pyside6 (>= 6.7) | python3-pyside6.qtwidgets, subversion
+Recommends: xdg-utils
+Suggests: svn-server-admin
+Section: vcs
+Priority: optional
+Homepage: https://github.com/svnsuite/svn-client
+Description: Linux desktop GUI for Subversion working copy operations
+ SVN Client provides a graphical interface for developers working with
+ Subversion (SVN) version-controlled projects on Linux.
+ .
+ Features include:
+  - Working copy status browser with coloured status indicators
+  - Unified and side-by-side diff viewer with syntax highlighting
+  - Paginated commit log with full-text search
+  - Checkout, update, commit, revert, and branch/tag operations
+  - Three-way conflict resolution panel
+  - Credential storage via system keyring (SecretService / KWallet)

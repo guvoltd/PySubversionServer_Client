@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background rounded square -->
+  <rect x="2" y="2" width="60" height="60" rx="12" ry="12"
+        fill="#2563eb"/>
+
+  <!-- Trunk (vertical line) -->
+  <line x1="32" y1="50" x2="32" y2="22" stroke="white" stroke-width="4"
+        stroke-linecap="round"/>
+
+  <!-- Left branch -->
+  <line x1="32" y1="34" x2="18" y2="22" stroke="white" stroke-width="3.5"
+        stroke-linecap="round"/>
+  <!-- Right branch -->
+  <line x1="32" y1="34" x2="46" y2="22" stroke="white" stroke-width="3.5"
+        stroke-linecap="round"/>
+
+  <!-- Trunk node (merge point) -->
+  <circle cx="32" cy="34" r="4" fill="white"/>
+
+  <!-- Left tip node -->
+  <circle cx="18" cy="22" r="4" fill="#93c5fd"/>
+  <!-- Right tip node -->
+  <circle cx="46" cy="22" r="4" fill="#93c5fd"/>
+  <!-- Root node -->
+  <circle cx="32" cy="50" r="4" fill="#bfdbfe"/>
+
+  <!-- "S" letter for SVN at center-top -->
+  <text x="32" y="15" font-family="sans-serif" font-size="10"
+        font-weight="bold" fill="white" text-anchor="middle"
+        dominant-baseline="middle">svn</text>
+</svg>

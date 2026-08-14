@@ -1,0 +1,7 @@
+svn-server-admin (0.1.0-1) unstable; urgency=low
+
+  * Initial Debian packaging.
+  * Implements repository management, access control editor, hook manager,
+    effective access viewer, SMTP profiles, job scheduler, and service panel.
+
+ -- SVN Suite Team <dev@svnsuite.example.org>  Tue, 01 Jul 2026 00:00:00 +0000

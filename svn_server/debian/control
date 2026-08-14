@@ -1,0 +1,44 @@
+Source: svn-server-admin
+Section: vcs
+Priority: optional
+Maintainer: SVN Suite Team <dev@svnsuite.example.org>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-python,
+ python3-all,
+ python3-setuptools,
+ python3-wheel,
+ pybuild-plugin-pyproject,
+Standards-Version: 4.6.2
+Homepage: https://github.com/svnsuite/svn-server-admin
+Rules-Requires-Root: no
+Vcs-Git: https://github.com/svnsuite/svn-server-admin.git
+Vcs-Browser: https://github.com/svnsuite/svn-server-admin
+
+Package: svn-server-admin
+Architecture: all
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+ python3-pyside6 (>= 6.7) | python3-pyside6.qtwidgets,
+ python3-keyring (>= 25.0),
+ subversion,
+ subversion-tools,
+Recommends:
+ svnadmin,
+Suggests:
+ svn-client,
+ apache2,
+ libapache2-svn,
+Description: Linux desktop GUI for Subversion repository management
+ SVN Server Admin provides a graphical interface for system administrators
+ managing Subversion repositories on Linux.
+ .
+ Features include:
+  - Create, delete, inspect, and hot-copy repositories
+  - User, group, and path-based access control (svnserve.conf / authz)
+  - Hook script editor with shell syntax highlighting for all 9 hook types
+  - Effective access checker with transitive group expansion
+  - SMTP outgoing mail profile manager with test-send capability
+  - Automated backup and repository verification scheduler
+  - svnserve daemon status and control panel

@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+# Debian build rules for svn-client using pybuild.
+
+export PYBUILD_NAME=svn-client
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_install:
+	dh_auto_install
+	# Install desktop integration files (mkdir+cp avoids chmod on NTFS mounts)
+	mkdir -p debian/svn-client/usr/share/applications
+	cp resources/org.svnsuite.SvnClient.desktop \
+	    debian/svn-client/usr/share/applications/
+	mkdir -p debian/svn-client/usr/share/icons/hicolor/scalable/apps
+	cp resources/icons/org.svnsuite.SvnClient.svg \
+	    debian/svn-client/usr/share/icons/hicolor/scalable/apps/
+	mkdir -p debian/svn-client/usr/share/metainfo
+	cp resources/org.svnsuite.SvnClient.metainfo.xml \
+	    debian/svn-client/usr/share/metainfo/

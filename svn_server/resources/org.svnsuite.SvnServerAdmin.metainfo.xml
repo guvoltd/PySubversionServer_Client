@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.svnsuite.SvnServerAdmin</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LGPL-3.0-or-later</project_license>
+
+  <name>SVN Server Admin</name>
+  <summary>GUI for managing Subversion repositories</summary>
+
+  <description>
+    <p>
+      SVN Server Admin provides a graphical interface for system administrators
+      managing Subversion (SVN) repositories on Linux servers.
+    </p>
+    <p>Key features:</p>
+    <ul>
+      <li>Create, delete, inspect, and hot-copy repositories</li>
+      <li>Manage users, groups, and fine-grained path permissions (authz)</li>
+      <li>Edit and enable/disable all 9 SVN hook scripts with syntax highlighting</li>
+      <li>Evaluate effective access for any user on any path</li>
+      <li>Configure SMTP outgoing mail profiles with live test send</li>
+      <li>Schedule automated backup and verification jobs</li>
+      <li>Monitor and control the svnserve daemon</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">org.svnsuite.SvnServerAdmin.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Repository manager with access control editor</caption>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/svnsuite/svn-server-admin</url>
+  <url type="bugtracker">https://github.com/svnsuite/svn-server-admin/issues</url>
+
+  <provides>
+    <binary>svn-server-admin</binary>
+  </provides>
+
+  <releases>
+    <release version="0.1.0" date="2026-07-01">
+      <description>
+        <p>Initial release with full repository administration, access control,
+           hook management, SMTP profiles, job scheduling, and service control.</p>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+
+  <requires>
+    <display_length compare="ge">900</display_length>
+  </requires>
+
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+</component>

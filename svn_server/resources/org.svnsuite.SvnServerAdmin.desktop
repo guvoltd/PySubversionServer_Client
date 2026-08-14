@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=SVN Server Admin
+GenericName=Subversion Server Administrator
+Comment=GUI for managing Subversion repositories
+Exec=svn-server-admin
+Icon=org.svnsuite.SvnServerAdmin
+Terminal=false
+Categories=Development;RevisionControl;System;
+Keywords=svn;subversion;repository;server;admin;hooks;access;backup;
+StartupNotify=true
+StartupWMClass=svn-server-admin

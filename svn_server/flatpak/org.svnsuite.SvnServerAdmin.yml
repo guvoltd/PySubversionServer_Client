@@ -1,0 +1,95 @@
+# Flatpak manifest for SVN Server Admin
+#
+# Prerequisites on the build host:
+#   flatpak install flathub org.kde.Platform//6.8 org.kde.Sdk//6.8
+#   flatpak install flathub org.freedesktop.Sdk.Extension.python313//24.08
+#
+# Generate Python wheel sources (run once, check result into version control):
+#   pip install flatpak-pip-generator
+#   flatpak-pip-generator PySide6 keyring --output python-deps
+#
+# Build:
+#   flatpak-builder --force-clean --install --user build-dir \
+#       svn_server/flatpak/org.svnsuite.SvnServerAdmin.yml
+
+app-id: org.svnsuite.SvnServerAdmin
+
+runtime: org.kde.Platform
+runtime-version: "6.8"
+
+sdk: org.kde.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.python313//24.08
+
+command: svn-server-admin
+
+finish-args:
+  # Wayland + X11 fallback
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  # Access repositories — typically under /srv or /var
+  - --filesystem=host
+  # D-Bus session bus for keyring
+  - --socket=session-bus
+  # D-Bus system bus for systemctl (service control)
+  - --system-talk-name=org.freedesktop.systemd1
+
+build-options:
+  append-path: /usr/lib/sdk/python313/bin
+  env:
+    PYTHON: python3
+    PIP: pip3
+    PYTHONDONTWRITEBYTECODE: "1"
+
+modules:
+  # ------------------------------------------------------------------
+  # 1. Install Python 3.13 into /app
+  # ------------------------------------------------------------------
+  - name: python313
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/python313/install.sh
+    sources: []
+
+  # ------------------------------------------------------------------
+  # 2. Python dependencies
+  # ------------------------------------------------------------------
+  - name: python-deps
+    buildsystem: simple
+    build-commands:
+      - pip3 install --no-index --find-links=. --prefix=/app
+          PySide6-Essentials PySide6-Addons keyring SecretStorage jeepney
+    sources:
+      - type: file
+        path: python-deps.json
+
+  # ------------------------------------------------------------------
+  # 3. Subversion CLI (svnadmin, svnlook are critical for server admin)
+  # ------------------------------------------------------------------
+  - name: subversion
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 /usr/bin/svn        /app/bin/svn
+      - install -Dm755 /usr/bin/svnadmin   /app/bin/svnadmin
+      - install -Dm755 /usr/bin/svnlook    /app/bin/svnlook
+      - install -Dm755 /usr/bin/svnserve   /app/bin/svnserve
+    sources: []
+
+  # ------------------------------------------------------------------
+  # 4. SVN Server Admin application
+  # ------------------------------------------------------------------
+  - name: svn-server-admin
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=/app ../svn_shared
+      - pip3 install --prefix=/app .
+      - install -Dm644 resources/org.svnsuite.SvnServerAdmin.desktop
+          /app/share/applications/org.svnsuite.SvnServerAdmin.desktop
+      - install -Dm644 resources/icons/org.svnsuite.SvnServerAdmin.svg
+          /app/share/icons/hicolor/scalable/apps/org.svnsuite.SvnServerAdmin.svg
+      - install -Dm644 resources/org.svnsuite.SvnServerAdmin.metainfo.xml
+          /app/share/metainfo/org.svnsuite.SvnServerAdmin.metainfo.xml
+    sources:
+      - type: dir
+        path: ../..

@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=svn-server-admin
+
+%:
+	dh $@ --with python3 --buildsystem=pyproject
+
+override_dh_install:
+	# First, run the default install process
+	dh_install
+
+	# Now, manually install our privileged helper and polkit policy
+	install -d $(CURDIR)/debian/svn-server-admin/usr/bin
+	install -m 755 resources/system-helper.sh $(CURDIR)/debian/svn-server-admin/usr/bin/svn-server-admin-helper
+	install -d $(CURDIR)/debian/svn-server-admin/usr/share/polkit-1/actions
+	install -m 644 resources/org.svnsuite.svnserveradmin.policy.xml $(CURDIR)/debian/svn-server-admin/usr/share/polkit-1/actions/org.svnsuite.svnserveradmin.policy.xml

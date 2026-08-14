@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background rounded square -->
+  <rect x="2" y="2" width="60" height="60" rx="12" ry="12"
+        fill="#7c3aed"/>
+
+  <!-- Server rack body -->
+  <rect x="14" y="16" width="36" height="10" rx="3" fill="white" opacity="0.9"/>
+  <rect x="14" y="29" width="36" height="10" rx="3" fill="white" opacity="0.75"/>
+  <rect x="14" y="42" width="36" height="8"  rx="3" fill="white" opacity="0.55"/>
+
+  <!-- LED indicators (top rack) -->
+  <circle cx="43" cy="21" r="2" fill="#4ade80"/>
+  <circle cx="38" cy="21" r="2" fill="#4ade80"/>
+
+  <!-- LED indicators (second rack) -->
+  <circle cx="43" cy="34" r="2" fill="#facc15"/>
+  <circle cx="38" cy="34" r="2" fill="#4ade80"/>
+
+  <!-- Slot lines (decorative) -->
+  <line x1="18" y1="21" x2="32" y2="21" stroke="#7c3aed" stroke-width="1.5"
+        stroke-linecap="round" opacity="0.5"/>
+  <line x1="18" y1="34" x2="32" y2="34" stroke="#7c3aed" stroke-width="1.5"
+        stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Small gear icon overlay (admin) -->
+  <circle cx="32" cy="46" r="4" fill="#a78bfa"/>
+  <circle cx="32" cy="46" r="2" fill="#7c3aed"/>
+</svg>

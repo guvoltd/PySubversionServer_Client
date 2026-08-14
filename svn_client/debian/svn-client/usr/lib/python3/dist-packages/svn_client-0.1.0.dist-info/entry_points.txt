@@ -1,0 +1,2 @@
+[console_scripts]
+svn-client = svn_client.__main__:main

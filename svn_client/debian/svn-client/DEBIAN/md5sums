@@ -1,0 +1,11 @@
+a48a72bc63a1e136063eb8b79108b915  usr/bin/svn-client
+c72246579c4437c07cebb86fbcbc6d90  usr/lib/python3/dist-packages/svn_client-0.1.0.dist-info/INSTALLER
+698248a2daabe4d9512fdeb624dda8b3  usr/lib/python3/dist-packages/svn_client-0.1.0.dist-info/METADATA
+a227bf38fb17005b3bdb56ccc428b1bb  usr/lib/python3/dist-packages/svn_client-0.1.0.dist-info/WHEEL
+0fbbf383803bed4600ca7001875ba8a2  usr/lib/python3/dist-packages/svn_client-0.1.0.dist-info/entry_points.txt
+68b329da9893e34099c7d8ad5cb9c940  usr/lib/python3/dist-packages/svn_client-0.1.0.dist-info/top_level.txt
+57da4b3714412cbc40411af718f7f8f3  usr/share/applications/org.svnsuite.SvnClient.desktop
+18e579f2c629fa64b995fd13af38562d  usr/share/doc/svn-client/changelog.Debian.gz
+9e0d89e83afea1067fb0e4992341eeb0  usr/share/doc/svn-client/copyright
+fc60797144ae4e50d11284d4954a9a51  usr/share/icons/hicolor/scalable/apps/org.svnsuite.SvnClient.svg
+0ccb3cff5819dca02fed453cabb37b0c  usr/share/metainfo/org.svnsuite.SvnClient.metainfo.xml
