@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 
-from PySide6.QtCore import QModelIndex, Qt, QThread, Signal
+from PySide6.QtCore import QModelIndex, QSettings, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import (
     QColor,
     QPainter,
@@ -128,6 +128,10 @@ class StatusTree(QWidget):
         self._worker: _StatusWorker | None = None
         self._setup_ui()
 
+        self._auto_refresh_timer = QTimer(self)
+        self._auto_refresh_timer.timeout.connect(self.refresh)
+        self.apply_auto_refresh_settings()
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
@@ -136,6 +140,15 @@ class StatusTree(QWidget):
         """Set working copy root and trigger a refresh."""
         self._wc_path = path
         self.refresh()
+
+    def apply_auto_refresh_settings(self) -> None:
+        """Re-read the auto-refresh interval from QSettings and (re)start the timer."""
+        s = QSettings()
+        enabled = s.value("Client/auto_refresh_enabled", False, type=bool)
+        seconds = int(s.value("Client/auto_refresh_seconds", 30))
+        self._auto_refresh_timer.stop()
+        if enabled:
+            self._auto_refresh_timer.start(max(5, seconds) * 1000)
 
     def refresh(self) -> None:
         """Reload status from SVN (runs in background thread)."""
@@ -175,7 +188,7 @@ class StatusTree(QWidget):
         layout.setSpacing(0)
 
         self._info_label = QLabel("Open a working copy to see changes.")
-        self._info_label.setStyleSheet("padding: 3px 6px; color: #666; font-size: 12px;")
+        self._info_label.setStyleSheet("padding: 3px 6px; font-size: 12px;")
         layout.addWidget(self._info_label)
 
         self._model = QStandardItemModel()
@@ -206,7 +219,13 @@ class StatusTree(QWidget):
             letter, color, label = _STATUS_META.get(entry.status, ("?", "#6a737d", entry.status))
 
             # Column 0 — path with badge icon and checkbox
-            display = os.path.relpath(entry.path, self._wc_path or "") if self._wc_path else entry.path
+            # `svn status --xml` (run with cwd=wc_path) already reports each entry's
+            # path relative to the working copy — re-relativizing it here would resolve
+            # against the process's own cwd instead, producing a bogus "../../.." path.
+            display = (
+                entry.path if not os.path.isabs(entry.path)
+                else os.path.relpath(entry.path, self._wc_path or "")
+            )
             path_item = QStandardItem(display)
             path_item.setData(entry.path, Qt.ItemDataRole.UserRole)
             path_item.setIcon(_badge(entry.status))  # type: ignore[arg-type]

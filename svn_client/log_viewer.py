@@ -13,6 +13,7 @@ from PySide6.QtCore import (
     QSettings,
     Qt,
     QThread,
+    QTimer,
     Signal,
 )
 from PySide6.QtWidgets import (
@@ -171,7 +172,7 @@ class _DetailPanel(QWidget):
         layout.setSpacing(4)
 
         self._rev_label = QLabel("Select a revision to see details.")
-        self._rev_label.setStyleSheet("font-weight: bold; color: #444;")
+        self._rev_label.setStyleSheet("font-weight: bold;")
         layout.addWidget(self._rev_label)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -226,9 +227,42 @@ class LogViewer(QWidget):
         self._model = _LogModel()
         self._setup_ui()
 
+        self._auto_refresh_timer = QTimer(self)
+        self._auto_refresh_timer.timeout.connect(self._on_auto_refresh)
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
+
+    def apply_auto_refresh_settings(self) -> None:
+        """Re-read the auto-refresh interval from QSettings.
+
+        Only takes effect while this view is actually visible (see
+        showEvent/hideEvent below) -- it just updates the interval used the
+        next time the timer is (re)started.
+        """
+        if self.isVisible():
+            self._start_auto_refresh()
+
+    def _start_auto_refresh(self) -> None:
+        s = QSettings()
+        enabled = s.value("Client/auto_refresh_enabled", False, type=bool)
+        seconds = int(s.value("Client/auto_refresh_seconds", 30))
+        self._auto_refresh_timer.stop()
+        if enabled:
+            self._auto_refresh_timer.start(max(5, seconds) * 1000)
+
+    def _on_auto_refresh(self) -> None:
+        if self._wc_path:
+            self.load(self._wc_path)
+
+    def showEvent(self, event) -> None:  # type: ignore[override]
+        super().showEvent(event)
+        self._start_auto_refresh()
+
+    def hideEvent(self, event) -> None:  # type: ignore[override]
+        super().hideEvent(event)
+        self._auto_refresh_timer.stop()
 
     def load(self, wc_path: str, limit: int | None = None) -> None:
         """Fetch log for the given working-copy path."""
@@ -319,7 +353,7 @@ class LogViewer(QWidget):
 
         # Status bar
         self._status_label = QLabel("Open a working copy to view log.")
-        self._status_label.setStyleSheet("padding: 2px 6px; color: #666; font-size: 12px;")
+        self._status_label.setStyleSheet("padding: 2px 6px; font-size: 12px;")
         layout.addWidget(self._status_label)
 
     # ------------------------------------------------------------------

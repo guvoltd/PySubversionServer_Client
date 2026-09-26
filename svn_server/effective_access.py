@@ -190,7 +190,7 @@ class EffectiveAccess(QWidget):
 
         # Repo label
         self._repo_label = QLabel("No repository selected.")
-        self._repo_label.setStyleSheet("font-style: italic; color: #666;")
+        self._repo_label.setStyleSheet("font-style: italic;")
         layout.addWidget(self._repo_label)
 
         # Email bypass note

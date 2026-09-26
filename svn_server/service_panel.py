@@ -161,7 +161,7 @@ class _ServiceTab(QWidget):
         self._refresh_btn.clicked.connect(self._refresh_status)
 
         warn = QLabel("⚠ Start/Stop/Restart requires root or sudo privileges.")
-        warn.setStyleSheet("color: #856404; font-size: 11px;")
+        warn.setStyleSheet("font-size: 11px;")
         warn.setWordWrap(True)
 
         for w in (self._start_btn, self._stop_btn, self._restart_btn, self._refresh_btn):

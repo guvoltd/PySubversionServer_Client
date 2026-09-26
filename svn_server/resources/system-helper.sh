@@ -133,6 +133,33 @@ case "$ACTION" in
         echo "Set ownership of '$REPO_PATH' to ${SVN_USER}:${SVN_GROUP}."
         ;;
 
+    "load_dump")
+        REPO_PATH="$1"
+        DUMP_FILE="$2"
+        SVN_USER="$3"
+        SVN_GROUP="$4"
+
+        if [ ! -d "$REPO_PATH" ]; then
+            log_error "Repository not found at '$REPO_PATH'"
+        fi
+        if [ ! -f "$DUMP_FILE" ]; then
+            log_error "Dump file not found at '$DUMP_FILE'"
+        fi
+
+        # Repos are owned by svn:svnserver with no group-write bit, so the
+        # invoking desktop user can't write into db/ themselves (this runs
+        # as root via pkexec, so it can). svnadmin needs to create temporary
+        # files inside the repo while loading.
+        svnadmin load "$REPO_PATH" < "$DUMP_FILE"
+        echo "Loaded '$DUMP_FILE' into '$REPO_PATH'."
+
+        # Loading as root leaves the new revision files root-owned, which
+        # would then block svnserve (running as svn:svnserver) from reading
+        # them -- restore the expected ownership, same as create_repo does.
+        chown -R "${SVN_USER}:${SVN_GROUP}" "$REPO_PATH"
+        echo "Set ownership of '$REPO_PATH' to ${SVN_USER}:${SVN_GROUP}."
+        ;;
+
     "delete_repo")
         REPO_PATH="$1"
         BACKUP_FIRST="$2" # "true" or "false"

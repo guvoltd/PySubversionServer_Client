@@ -6,12 +6,14 @@ Usage:
 """
 
 import logging
+import os
 import sys
 
 def main() -> int:
     """Launch the SVN Server Admin GUI."""
     from PySide6.QtWidgets import QApplication
     from PySide6.QtCore import QSettings
+    from PySide6.QtGui import QIcon
 
     from svn_server.app import ServerMainWindow
 
@@ -19,6 +21,12 @@ def main() -> int:
     app.setOrganizationName("svnsuite")
     app.setApplicationName("svn-server-admin")
     app.setApplicationVersion("0.1.0")
+
+    icon_path = os.path.join(
+        os.path.dirname(__file__), "resources", "icons", "org.svnsuite.SvnServerAdmin.ico"
+    )
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
 
     settings = QSettings()
     debug_level = int(settings.value("General/debug_level", 0))

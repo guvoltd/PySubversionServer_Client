@@ -32,12 +32,30 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.10",
 ]
+packaging = [
+    "pyinstaller>=6.0",
+]
 
 [project.scripts]
 svn-client = "svn_client.__main__:main"
 
-[tool.setuptools.packages.find]
-include = ["svn_client*", "svn_shared*"]
+[tool.setuptools]
+packages = ["svn_client", "svn_shared", "svn_shared.widgets"]
+
+[tool.setuptools.package-data]
+svn_client = ["resources/icons/*.ico", "resources/icons/*.png"]
+svn_shared = ["resources/styles/*.qss"]
+
+# `svn_client` is this project's own flat-layout package (its files sit
+# directly here, in the pyproject.toml's own directory), while `svn_shared`
+# is a sibling package one level up in the monorepo that this project
+# depends on but doesn't own. sdist packaging can't reach outside the
+# project directory, so `svn_shared` must be vendored (physically copied)
+# into svn_shared/ here before building -- run scripts/vendor-shared.sh
+# first (scripts/build-all.sh does this automatically).
+[tool.setuptools.package-dir]
+svn_client = "."
+svn_shared = "svn_shared"
 
 [tool.ruff]
 line-length = 100

@@ -5,6 +5,8 @@ T-305: all sub-tasks (a-c)
 
 from __future__ import annotations
 
+import logging
+
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import (
     QComboBox,
@@ -28,6 +30,8 @@ from svn_shared.exceptions import SvnCommandError
 from svn_shared.widgets.progress_overlay import ProgressOverlay
 
 _STANDARD_DIRS = {"trunk", "branches", "tags"}
+
+logger = logging.getLogger(__name__)
 
 
 def _detect_standard_layout(wc_info: WCInfo) -> tuple[str, bool]:
@@ -55,7 +59,11 @@ def _strip_to_root(url: str) -> str:
 # ---------------------------------------------------------------------------
 
 class _CopyWorker(QThread):
-    finished = Signal()
+    # NOTE: not named `finished` -- see the comment on _CheckoutWorker in
+    # checkout_dialog.py. A same-signature Signal() named `finished` on a
+    # QThread subclass collides with QThread's own built-in completion
+    # signal and fires a second time even after the error path runs.
+    succeeded = Signal()
     error = Signal(str)
 
     def __init__(self, src_url: str, dst_url: str, message: str) -> None:
@@ -67,13 +75,17 @@ class _CopyWorker(QThread):
     def run(self) -> None:
         try:
             svc.copy(self._src, self._dst, self._msg)
-            self.finished.emit()
+            self.succeeded.emit()
         except SvnCommandError as exc:
+            logger.error("Branch/tag copy failed: %s", exc)
             self.error.emit(str(exc))
+        except Exception as exc:
+            logger.exception("Branch/tag copy failed with an unexpected error")
+            self.error.emit(f"{type(exc).__name__}: {exc}")
 
 
 class _SwitchWorker(QThread):
-    finished = Signal()
+    succeeded = Signal()
     error = Signal(str)
 
     def __init__(self, wc_path: str, url: str) -> None:
@@ -84,9 +96,13 @@ class _SwitchWorker(QThread):
     def run(self) -> None:
         try:
             svc.switch(self._wc_path, self._url)
-            self.finished.emit()
+            self.succeeded.emit()
         except SvnCommandError as exc:
+            logger.error("Working copy switch failed: %s", exc)
             self.error.emit(str(exc))
+        except Exception as exc:
+            logger.exception("Working copy switch failed with an unexpected error")
+            self.error.emit(f"{type(exc).__name__}: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -127,7 +143,7 @@ class _CreatePage(QWidget):
                 f"Branches: {project_root}/branches/&lt;name&gt;<br>"
                 f"Tags:     {project_root}/tags/&lt;name&gt;"
             )
-            hint.setStyleSheet("color: #666; font-size: 11px;")
+            hint.setStyleSheet("font-size: 11px;")
             form.addRow("", hint)
 
         self._msg_edit = QLineEdit()
@@ -171,7 +187,6 @@ class _SwitchPage(QWidget):
         form = QFormLayout(form_group)
 
         self._current_label = QLabel(wc_info.url)
-        self._current_label.setStyleSheet("color: #444;")
         form.addRow("Current URL:", self._current_label)
 
         self._target_edit = QLineEdit()
@@ -183,7 +198,7 @@ class _SwitchPage(QWidget):
                 f"Trunk: {project_root}/trunk<br>"
                 f"Or enter any branch/tag URL from your repository."
             )
-            hint.setStyleSheet("color: #666; font-size: 11px;")
+            hint.setStyleSheet("font-size: 11px;")
             form.addRow("", hint)
 
         layout.addWidget(form_group)
@@ -295,7 +310,7 @@ class BranchDialog(QDialog):
                 self._create_page.dst_url,
                 self._create_page.message,
             )
-            self._worker.finished.connect(self._on_done)
+            self._worker.succeeded.connect(self._on_done)
             self._worker.error.connect(self._on_error)
             self._worker.start()
         else:
@@ -305,7 +320,7 @@ class BranchDialog(QDialog):
             self._overlay.show_progress("Switching working copy…", indeterminate=True)
             self._ok_btn.setEnabled(False)
             self._worker = _SwitchWorker(self._wc_path, self._switch_page.target_url)
-            self._worker.finished.connect(self._on_done)
+            self._worker.succeeded.connect(self._on_done)
             self._worker.error.connect(self._on_error)
             self._worker.start()
 

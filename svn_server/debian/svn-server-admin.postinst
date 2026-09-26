@@ -1,0 +1,42 @@
+#!/bin/sh
+# postinst for svn-server-admin
+#
+# Creates the dedicated system user/group that svnserve.service (shipped as
+# debian/svn-server-admin.svnserve.service, installed as svnserve.service --
+# see the override_dh_installsystemd target in debian/rules) runs as, and
+# makes sure the default repository root exists with the right ownership
+# before dh_installsystemd's auto-generated code below enables/starts the
+# service.
+#
+# Mirrors svn_server/resources/system-helper.sh's add_user/add_group/
+# set_ownership actions exactly, so the result is identical whether this
+# user/group/directory came from the package install or from the app's own
+# GUI (Service tab -> Install and Enable Service).
+
+set -e
+
+SVN_USER="svn"
+SVN_GROUP="svnserver"
+REPO_ROOT="/var/svn"
+
+case "$1" in
+    configure)
+        if ! getent group "$SVN_GROUP" > /dev/null; then
+            groupadd "$SVN_GROUP"
+        fi
+
+        if ! getent passwd "$SVN_USER" > /dev/null; then
+            useradd -r -g "$SVN_GROUP" -d "/home/$SVN_USER" -s /sbin/nologin \
+                -m -k /dev/null "$SVN_USER"
+        fi
+
+        mkdir -p "$REPO_ROOT"
+        chown -R "$SVN_USER:$SVN_GROUP" "$REPO_ROOT"
+        chmod -R u=rwX,g=rwX,o=rX "$REPO_ROOT"
+        find "$REPO_ROOT" -type d -exec chmod g+s {} +
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

@@ -12,6 +12,7 @@ from PySide6.QtGui import (
     QColor,
     QFont,
     QPainter,
+    QPalette,
     QTextCharFormat,
     QTextCursor,
 )
@@ -123,7 +124,13 @@ class _CodeEditor(QPlainTextEdit):
 
     def paint_line_numbers(self, event) -> None:
         painter = QPainter(self._gutter)
-        painter.fillRect(event.rect(), QColor("#f6f8fa"))
+        # Derive gutter shades from the editor's own (theme-styled) palette instead
+        # of a hardcoded light-mode color, so it doesn't clash with dark/blue themes.
+        base = self.palette().color(QPalette.ColorRole.Base)
+        text_color = self.palette().color(QPalette.ColorRole.Text)
+        gutter_bg = base.darker(110) if base.lightness() > 128 else base.lighter(130)
+        gutter_fg = text_color.darker(150) if text_color.lightness() > 128 else text_color.lighter(150)
+        painter.fillRect(event.rect(), gutter_bg)
 
         block = self.firstVisibleBlock()
         num = block.blockNumber()
@@ -132,7 +139,7 @@ class _CodeEditor(QPlainTextEdit):
 
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
-                painter.setPen(QColor("#999"))
+                painter.setPen(gutter_fg)
                 painter.drawText(
                     0, top, self._gutter.width() - 3,
                     self.fontMetrics().height(),
@@ -317,7 +324,7 @@ class DiffViewer(QWidget):
         label = file_path or wc_path
         rev_label = f" vs r{revision}" if revision else " vs BASE"
         self._header_label.setText(f"{label}{rev_label}")
-        self._header_label.setStyleSheet("color: #666; padding: 2px 6px;")
+        self._header_label.setStyleSheet("padding: 2px 6px;")
 
         self._worker = _DiffWorker(wc_path, file_path, revision)
         self._worker.finished.connect(self.load_diff)
@@ -356,11 +363,13 @@ class DiffViewer(QWidget):
         font_up = QPushButton("A+")
         font_up.setFixedWidth(32)
         font_up.setFixedHeight(24)
+        font_up.setStyleSheet("padding: 2px;")
         font_up.clicked.connect(lambda: self._adjust_font(+1))
 
         font_dn = QPushButton("A-")
         font_dn.setFixedWidth(32)
         font_dn.setFixedHeight(24)
+        font_dn.setStyleSheet("padding: 2px;")
         font_dn.clicked.connect(lambda: self._adjust_font(-1))
 
         self._header_label = QLabel()

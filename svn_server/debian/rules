@@ -3,7 +3,7 @@
 export PYBUILD_NAME=svn-server-admin
 
 %:
-	dh $@ --with python3 --buildsystem=pyproject
+	dh $@ --with python3 --buildsystem=pybuild
 
 override_dh_install:
 	# First, run the default install process
@@ -14,3 +14,11 @@ override_dh_install:
 	install -m 755 resources/system-helper.sh $(CURDIR)/debian/svn-server-admin/usr/bin/svn-server-admin-helper
 	install -d $(CURDIR)/debian/svn-server-admin/usr/share/polkit-1/actions
 	install -m 644 resources/org.svnsuite.svnserveradmin.policy.xml $(CURDIR)/debian/svn-server-admin/usr/share/polkit-1/actions/org.svnsuite.svnserveradmin.policy.xml
+
+# debian/svn-server-admin.svnserve.service is named after the *unit* (not
+# the package), so dh_installsystemd needs --name to find it and install it
+# as svnserve.service -- that exact name is hardcoded throughout the GUI
+# (service_panel.py's start/stop/restart/enable calls and its "already
+# installed" check at /etc/systemd/system/svnserve.service).
+override_dh_installsystemd:
+	dh_installsystemd --name=svnserve

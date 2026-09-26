@@ -24,8 +24,10 @@ Depends:
  python3-keyring (>= 25.0),
  subversion,
  subversion-tools,
+ policykit-1,
 Recommends:
  svnadmin,
+ policykit-1-gnome | lxqt-policykit | lxpolkit | polkit-kde-agent-1 | mate-polkit,
 Suggests:
  svn-client,
  apache2,

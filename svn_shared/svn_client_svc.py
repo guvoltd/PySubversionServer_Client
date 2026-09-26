@@ -231,9 +231,14 @@ def log(
     Returns:
         List of LogEntry objects, newest first.
     """
-    args = ["svn", "log", "--xml", "-v", "-l", str(limit)]
-    if revision_range:
-        args.extend(["-r", revision_range])
+    # Without an explicit -r, `svn log` pegs itself to the working copy's own
+    # locally-recorded BASE revision for `path` -- which committing files
+    # inside it does NOT advance (only the committed items themselves get
+    # bumped; the containing directory's own revision stays frozen until an
+    # explicit `svn update`). That made the log view silently miss the most
+    # recent commit(s) until the user updated first. Default to HEAD so the
+    # log always reflects the true repository state.
+    args = ["svn", "log", "--xml", "-v", "-l", str(limit), "-r", revision_range or "HEAD:1"]
     result = _run(args, cwd=path)
 
     entries: list[LogEntry] = []

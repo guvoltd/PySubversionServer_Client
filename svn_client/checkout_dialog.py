@@ -5,6 +5,7 @@ T-303: all sub-tasks (a-e)
 
 from __future__ import annotations
 
+import logging
 import re
 
 from PySide6.QtCore import QSettings, Qt, QThread, Signal
@@ -31,6 +32,8 @@ from svn_shared.widgets.progress_overlay import ProgressOverlay
 
 _URL_RE = re.compile(r"^(svn|http|https|file)://\S+", re.IGNORECASE)
 
+logger = logging.getLogger(__name__)
+
 
 # ---------------------------------------------------------------------------
 # Background worker
@@ -38,7 +41,12 @@ _URL_RE = re.compile(r"^(svn|http|https|file)://\S+", re.IGNORECASE)
 
 class _CheckoutWorker(QThread):
     line_received = Signal(str)
-    finished = Signal()
+    # NOTE: deliberately not named `finished` -- QThread already has a built-in
+    # no-arg `finished` signal emitted whenever run() returns (success OR a
+    # caught exception). A same-signature custom Signal() of that exact name
+    # collides with it, so it fires a second time even on the error path,
+    # silently overwriting the error UI with a false "succeeded" outcome.
+    succeeded = Signal()
     error = Signal(str)
     auth_error = Signal(str)
 
@@ -58,6 +66,10 @@ class _CheckoutWorker(QThread):
         self._password = password
 
     def run(self) -> None:
+        logger.info(
+            "Checkout starting: url=%s path=%s revision=%s",
+            self._url, self._path, self._revision or "HEAD",
+        )
         try:
             svc.checkout(
                 self._url,
@@ -66,11 +78,20 @@ class _CheckoutWorker(QThread):
                 username=self._username,
                 password=self._password,
             )
-            self.finished.emit()
+            logger.info("Checkout finished: path=%s", self._path)
+            self.succeeded.emit()
         except SvnAuthError as exc:
+            logger.warning("Checkout auth failed: %s", exc)
             self.auth_error.emit(str(exc))
         except SvnCommandError as exc:
+            logger.error("Checkout command failed: %s", exc)
             self.error.emit(str(exc))
+        except Exception as exc:
+            # Catch-all: anything else (bad-argument ValueError, missing `svn`
+            # binary, permission errors, ...) must still reach the UI instead
+            # of dying silently inside this thread with no visible feedback.
+            logger.exception("Checkout failed with an unexpected error")
+            self.error.emit(f"{type(exc).__name__}: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -199,7 +220,7 @@ class CheckoutDialog(QDialog):
 
         # Progress log
         self._log_label = QLabel()
-        self._log_label.setStyleSheet("color: #444; font-size: 11px; padding: 2px;")
+        self._log_label.setStyleSheet("font-size: 11px; padding: 2px;")
         self._log_label.setWordWrap(True)
         layout.addWidget(self._log_label)
 
@@ -244,29 +265,33 @@ class CheckoutDialog(QDialog):
         self._start_worker(url, path, revision)
 
     def _start_worker(self, url: str, path: str, revision: str | None) -> None:
+        logger.debug("_start_worker: url=%s path=%s revision=%s", url, path, revision)
         self._ok_btn.setEnabled(False)
         self._log_label.setText("Starting checkout…")
         self._overlay.show_progress("Checking out…", indeterminate=True)
 
         self._worker = _CheckoutWorker(url, path, revision, self._username, self._password)
-        self._worker.finished.connect(lambda: self._on_done(path))
+        self._worker.succeeded.connect(lambda: self._on_done(path))
         self._worker.error.connect(self._on_error)
         self._worker.auth_error.connect(lambda msg: self._on_auth_error(url, path, revision, msg))
         self._worker.start()
 
     def _on_done(self, path: str) -> None:
+        logger.debug("_on_done: checkout completed at %s", path)
         self._overlay.hide_progress()
         self._log_label.setText(f"Checkout complete: {path}")
         self.checkout_completed.emit(path)
         self.accept()
 
     def _on_error(self, msg: str) -> None:
+        logger.debug("_on_error: %s", msg)
         self._overlay.hide_progress()
         self._ok_btn.setEnabled(True)
         self._log_label.setText(f"Error: {msg}")
         QMessageBox.critical(self, "Checkout Failed", msg)
 
     def _on_auth_error(self, url: str, path: str, revision: str | None, msg: str) -> None:
+        logger.debug("_on_auth_error for %s: %s", url, msg)
         self._overlay.hide_progress()
         cred_dlg = _CredentialDialog(url, self)
         if cred_dlg.exec() == QDialog.DialogCode.Accepted:

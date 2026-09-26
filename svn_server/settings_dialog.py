@@ -66,7 +66,7 @@ class ServerSettingsDialog(QDialog):
         group = QGroupBox("Appearance")
         form = QFormLayout(group)
         self._theme_combo = QComboBox()
-        self._theme_combo.addItems(["Light", "Dark", "Auto (system)"])
+        self._theme_combo.addItems(["Light", "Dark", "Blue", "Auto (system)"])
         self._theme_combo.setToolTip("Choose the application colour theme")
         form.addRow("Theme:", self._theme_combo)
 
@@ -176,7 +176,7 @@ class ServerSettingsDialog(QDialog):
     # Load / Save
     # ------------------------------------------------------------------
 
-    _THEME_VALUES = ["light", "dark", "auto"]
+    _THEME_VALUES = ["light", "dark", "blue", "auto"]
     _BACKEND_VALUES = ["fsfs", "fsx"]
 
     def _load(self) -> None:

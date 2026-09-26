@@ -1,0 +1,12 @@
+[Unit]
+Description=Subversion Repository Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/svnserve --daemon --foreground --root /var/svn
+Restart=on-failure
+User=svn
+
+[Install]
+WantedBy=multi-user.target

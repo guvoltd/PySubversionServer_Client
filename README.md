@@ -142,8 +142,14 @@ The individual packaging scripts are:
 | `scripts/package-client-deb.sh` | Build SVN Client .deb package |
 | `scripts/package-server-flatpak.sh` | Build SVN Server Admin Flatpak bundle |
 | `scripts/package-server-deb.sh` | Build SVN Server Admin .deb package |
+| `scripts/package-client-appimage.sh` | Build a portable, single-file Linux AppImage for SVN Client (PyInstaller + appimagetool) |
+| `scripts/package-server-appimage.sh` | Build a portable, single-file Linux AppImage for SVN Server Admin |
+| `scripts/package-client-windows.ps1` | **Run on Windows.** Build `svn-client.exe` (PyInstaller) and a Windows installer (Inno Setup) |
+| `scripts/package-server-windows.ps1` | **Run on Windows.** Build `svn-server-admin.exe` and its Windows installer |
 | `scripts/build-all.sh` | Build both wheels (shell wrapper for CI) |
 | `scripts/run-dev.sh` | Launch either app in dev mode: `./scripts/run-dev.sh client` or `server` |
+
+See [`docs/standalone-packaging.md`](docs/standalone-packaging.md) for details on the single-file executable / installer pipeline (PyInstaller + AppImage/Inno Setup), including the pkexec/privileged-action caveat for the portable Server Admin builds. See [`docs/installing-from-wheel.md`](docs/installing-from-wheel.md) for how to install the plain `.whl`/`.tar.gz` from `scripts/build-all.sh` on Debian, other Linux distros, or Windows.
 
 ### Cleanup
 

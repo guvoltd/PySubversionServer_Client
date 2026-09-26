@@ -37,6 +37,10 @@ _PAGE_DIFF     = 1
 _PAGE_LOG      = 2
 _PAGE_CONFLICT = 3
 
+_LAST_WC_KEY = "Client/last_wc_path"
+_RECENT_WC_KEY = "Client/recent_wc_paths"
+_MAX_RECENT_WC = 10
+
 # Default shortcut definitions — loaded from QSettings at startup.
 # Users may override via QSettings key  Client/shortcuts/<action_key>.
 _DEFAULT_SHORTCUTS: dict[str, str] = {
@@ -166,10 +170,26 @@ class ClientMainWindow(QMainWindow):
         self._load_theme()
         self._restore_geometry()
 
-        # Re-open last working copy on startup
-        last = self._settings.value("Client/default_wc_path", "")
+        # Re-open last working copy on startup: prefer the location actually
+        # used last session; fall back to the configured default path if
+        # that's no longer there, and let the user know when that happens.
+        last = self._settings.value(_LAST_WC_KEY, "")
+        default = self._settings.value("Client/default_wc_path", "")
         if last and os.path.isdir(last):
             self._open_wc(last)
+        elif default and os.path.isdir(default):
+            if last:
+                QMessageBox.information(
+                    self, "Last Repository Not Found",
+                    f"The last used working copy could not be found:\n{last}\n\n"
+                    f"Opening the default location instead:\n{default}",
+                )
+            self._open_wc(default)
+        elif last:
+            QMessageBox.information(
+                self, "Last Repository Not Found",
+                f"The last used working copy could not be found:\n{last}",
+            )
 
     # ------------------------------------------------------------------
     # Menu bar
@@ -194,6 +214,9 @@ class ClientMainWindow(QMainWindow):
         )
         self._checkout_action.triggered.connect(self._on_checkout)
         file_menu.addAction(self._checkout_action)
+
+        self._recent_menu = file_menu.addMenu("Open &Recent")
+        self._rebuild_recent_menu()
 
         file_menu.addSeparator()
         quit_action = QAction("&Quit", self)
@@ -432,6 +455,56 @@ class ClientMainWindow(QMainWindow):
         self._content.setCurrentIndex(_PAGE_WELCOME)
         self._status_tree.set_wc_path(path)
 
+        self._settings.setValue(_LAST_WC_KEY, path)
+        self._add_recent_wc(path)
+        self._rebuild_recent_menu()
+
+    # ------------------------------------------------------------------
+    # Recent repositories
+    # ------------------------------------------------------------------
+
+    def _load_recent_wc(self) -> list[str]:
+        paths = self._settings.value(_RECENT_WC_KEY, [])
+        return paths if isinstance(paths, list) else []
+
+    def _add_recent_wc(self, path: str) -> None:
+        paths = self._load_recent_wc()
+        if path in paths:
+            paths.remove(path)
+        paths.insert(0, path)
+        self._settings.setValue(_RECENT_WC_KEY, paths[:_MAX_RECENT_WC])
+
+    def _rebuild_recent_menu(self) -> None:
+        self._recent_menu.clear()
+        paths = self._load_recent_wc()
+        if not paths:
+            empty_action = self._recent_menu.addAction("(No recent repositories)")
+            empty_action.setEnabled(False)
+            return
+        for path in paths:
+            action = self._recent_menu.addAction(path)
+            action.triggered.connect(lambda checked=False, p=path: self._on_open_recent(p))
+        self._recent_menu.addSeparator()
+        clear_action = self._recent_menu.addAction("Clear Recent")
+        clear_action.triggered.connect(self._on_clear_recent)
+
+    def _on_open_recent(self, path: str) -> None:
+        if not os.path.isdir(path):
+            QMessageBox.warning(
+                self, "Not Found", f"This working copy no longer exists:\n{path}"
+            )
+            paths = self._load_recent_wc()
+            if path in paths:
+                paths.remove(path)
+                self._settings.setValue(_RECENT_WC_KEY, paths)
+            self._rebuild_recent_menu()
+            return
+        self._open_wc(path)
+
+    def _on_clear_recent(self) -> None:
+        self._settings.setValue(_RECENT_WC_KEY, [])
+        self._rebuild_recent_menu()
+
     def _handle_svn_error(self, title: str, exc: SvnCommandError) -> None:
         """Centralized error handling for SvnCommandError."""
         QMessageBox.critical(
@@ -543,6 +616,8 @@ class ClientMainWindow(QMainWindow):
         dlg = ClientSettingsDialog(self)
         dlg.theme_changed.connect(self._apply_theme)
         dlg.exec()
+        self._status_tree.apply_auto_refresh_settings()
+        self._log_viewer.apply_auto_refresh_settings()
 
     def _apply_theme(self, theme: str) -> None:
         self._settings.setValue("General/theme", theme)

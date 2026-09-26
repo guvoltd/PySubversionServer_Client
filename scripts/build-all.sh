@@ -9,6 +9,11 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 # Bootstrap the virtual environment
 source "$SCRIPT_DIR/ensure-venv.sh"
 
+# Vendor svn_shared/ into each app so the sdist/wheel builds are
+# self-contained (sdist packaging can't reach outside the project directory
+# to pick up the sibling svn_shared/ package).
+bash "$SCRIPT_DIR/vendor-shared.sh"
+
 echo "=== Building SVN Client ==="
 "$VENV_PYTHON" -m build "$ROOT_DIR/svn_client"
 

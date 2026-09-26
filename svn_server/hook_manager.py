@@ -181,7 +181,7 @@ class HookManager(QWidget):
         self._params_group.setChecked(False)
         params_layout = QVBoxLayout(self._params_group)
         self._params_label = QLabel()
-        self._params_label.setStyleSheet("font-family: monospace; font-size: 12px; color: #444;")
+        self._params_label.setStyleSheet("font-family: monospace; font-size: 12px;")
         params_layout.addWidget(self._params_label)
         right_layout.addWidget(self._params_group)
 

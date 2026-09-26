@@ -1047,7 +1047,7 @@ class RepoManager(QWidget):
         
         self._empty_label = QLabel("Set a repository root to list repositories.")
         self._empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._empty_label.setStyleSheet("color: #888; font-size: 13px;")
+        self._empty_label.setStyleSheet("font-size: 13px;")
 
         repo_tab_layout.addWidget(self._repo_list)
         repo_tab_layout.addWidget(self._empty_label)
@@ -1360,11 +1360,19 @@ class RepoManager(QWidget):
             self._do_load(item.data(Qt.ItemDataRole.UserRole), dump_file)
 
     def _do_load(self, repo_path: str, dump_file: str) -> None:
-        self._overlay.show_progress("Loading dump file…", indeterminate=True)
-        self._worker = _Worker(svc.load, repo_path, dump_file)
-        self._worker.finished.connect(lambda _: self.refresh())
-        self._worker.error.connect(self._on_error)
-        self._worker.start()
+        # Repositories are owned by svn:svnserver (see create_repo/set_ownership),
+        # so `svnadmin load` running as the desktop user can't create the
+        # temporary files it needs inside db/ -- it fails with a permission
+        # error. Route through the privileged helper (same as repo creation)
+        # so the load runs as root, then have it restore svn:svnserver
+        # ownership afterward.
+        if not os.path.isfile(dump_file):
+            self._on_error(f"Dump file not found: {dump_file}")
+            return
+        self._run_helper_script(
+            ["load_dump", repo_path, dump_file, self._SVN_USER, self._SVN_GROUP]
+        )
+        self.refresh()
 
     # ------------------------------------------------------------------
     # Slots — hot copy

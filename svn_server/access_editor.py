@@ -30,6 +30,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QApplication,
     QPushButton,
+    QSizePolicy,
     QSplitter,
     QTabWidget,
     QTableWidget,
@@ -473,13 +474,10 @@ class _PermissionsTab(QWidget):
             "When multiple rules at the same level, broadest access wins."
         )
         inherit_note.setWordWrap(True)
-        inherit_note.setStyleSheet(
-            "color: #444; background: #f0f0f0; padding: 5px; border: 1px solid #ccc;"
-        )
+        inherit_note.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         layout.addWidget(inherit_note)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
-
         # Left: path list
         path_widget = QWidget()
         path_layout = QVBoxLayout(path_widget)

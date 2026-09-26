@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QSplitter,
     QVBoxLayout,
     QWidget,
@@ -99,7 +100,10 @@ class _ThreeWayView(QWidget):
         for title in ("Mine (working)", "Theirs (repository)", "Base (common ancestor)"):
             lbl = QLabel(title)
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            lbl.setStyleSheet("font-weight: bold; background: #f0f0f0; padding: 3px; border: 1px solid #ddd;")
+            lbl.setStyleSheet(
+                "font-weight: bold; background: #f0f0f0; color: #333; "
+                "padding: 3px; border: 1px solid #ddd;"
+            )
             h_layout.addWidget(lbl)
         layout.addWidget(headers)
 
@@ -190,6 +194,7 @@ class ConflictPanel(QWidget):
         # Guidance banner
         self._guidance_label = QLabel("Select a conflicted file to resolve it.")
         self._guidance_label.setWordWrap(True)
+        self._guidance_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self._guidance_label.setStyleSheet(
             "padding: 8px; background: #fff8e1; border-bottom: 1px solid #f0c000; color: #444;"
         )

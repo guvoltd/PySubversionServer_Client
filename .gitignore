@@ -8,6 +8,16 @@ __pycache__/
 dist/
 build/
 
+# PyInstaller / AppImage / Windows installer build output
+*.AppImage
+/svn_client/windows/Output/
+/svn_server/windows/Output/
+
+# Vendored copies of svn_shared/ created by scripts/vendor-shared.sh for
+# self-contained sdist/wheel builds -- not the source of truth, don't commit.
+/svn_client/svn_shared/
+/svn_server/svn_shared/
+
 # IDE
 .idea/
 .vscode/
